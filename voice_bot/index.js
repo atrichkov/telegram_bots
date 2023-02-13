@@ -15,7 +15,7 @@ bot.command('start', ctx => {
 })
 
 bot.on(message('voice'), async ctx => {
-    console.info('Voice message recived')
+    console.info('Voice message received')
 
     try {
         const {file_id: fileId} = ctx.update.message.voice
