@@ -25,8 +25,7 @@ bot.command('start', ctx => {
                 const message = `Hello, price update .. $${rate.usd.toLocaleString()} 💰`
                 bot.telegram.sendMessage(chatId, message)
             })
-        }, 2000);
-        // }, process.env.PRICE_NOTIFICATION_INTERVAL*60*60*1000);
+        }, process.env.PRICE_NOTIFICATION_INTERVAL*60*60*1000);
     }
 })
 
