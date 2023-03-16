@@ -1,6 +1,4 @@
 const commandArgs = () => (ctx, next) => {
-    // console.log(ctx.updateType);
-    // console.log(ctx.updateSubType)
     if (ctx.updateType === 'message') { // && ctx.updateSubType === 'text'
         const text = ctx.update.message.text
         if (text.startsWith('/')) {
