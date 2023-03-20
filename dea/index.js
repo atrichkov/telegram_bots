@@ -23,10 +23,10 @@ function reply(ctx, message) {
     })
 }
 
-let chatId
 bot.command('start', ctx => {
-    let chatId = ctx.chat.id
-    bot.telegram.sendMessage(ctx.chat.id, 'Hello there! \nI respond to /subscribe command followed by valid address. Please try it.', {})
+    bot.telegram.sendMessage(ctx.chat.id, 'Hello there! \nI respond to \n \
+     /update command to load latest DEA list \
+     /check command followed by valid email address. Please try it.', {})
 })
 
 bot.command('update', ctx => {
