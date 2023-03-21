@@ -1,0 +1,10 @@
+version: "3.8"
+services:
+  app:
+    container_name: peerberry_bot
+    build: .
+    # restart_policy:   
+    #   condition: on-failure   
+    #   max-attempts: 3
+    volumes:
+      - "./src:/app/src"

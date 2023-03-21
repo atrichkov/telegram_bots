@@ -1,0 +1,20 @@
+{
+  "name": "peerberry_bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon src/index",
+    "start": "node src/index"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.12",
+    "dotenv": "^16.0.3",
+    "nodemon": "^2.0.21",
+    "telegraf": "^4.12.2"
+  }
+}
