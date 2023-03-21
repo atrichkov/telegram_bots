@@ -46,7 +46,7 @@ bot.command('start', ctx => {
                     // const str = `${loanCountry} / ${loanType}`
                     // console.log(str)
 
-                    if (loanType === 'business' && ['philippines', 'kazakhstan', 'vietnam'].includes(loanCountry)) {
+                    if (loanType === 'short' && ['philippines', 'kazakhstan', 'vietnam'].includes(loanCountry)) {
                         return reply(ctx, `New short term loans founded, check it out [here](${url})`)
                     }
                 }
@@ -56,7 +56,7 @@ bot.command('start', ctx => {
             console.log(err)
             clearInterval(checkInterval)
         });
-    }, 5000)
+    }, 10*1000)
 })
 
 bot.launch()
