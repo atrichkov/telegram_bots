@@ -1,65 +1,78 @@
-require('dotenv').config()
-const https = require('https')
-const cheerio = require('cheerio')
-const { Telegraf } = require('telegraf')
+require('dotenv').config();
+const https = require('https');
+const cheerio = require('cheerio');
+const { Telegraf } = require('telegraf');
 
-const token = process.env.TELEGRAM_BOT_TOKEN
+const token = process.env.TELEGRAM_BOT_TOKEN;
 if (token === undefined) {
-    throw new Error('BOT_TOKEN must be provided!')
+  throw new Error('BOT_TOKEN must be provided!');
 }
-const bot = new Telegraf(token)
+const bot = new Telegraf(token);
 
 /**
- * @param {Object} ctx 
- * @param {string} message 
+ * @param {Object} ctx
+ * @param {string} message
  */
 function reply(ctx, message) {
-    ctx.reply(message, {
-        parse_mode: 'Markdown',
-        disable_web_page_preview: true
-    })
+  ctx.reply(message, {
+    parse_mode: 'Markdown',
+    disable_web_page_preview: true,
+  });
 }
 
-bot.command('start', ctx => {
-    bot.telegram.sendMessage(ctx.chat.id, 'I began monitoring the for short-term loans.', {})
+console.log();
 
-    const checkInterval = setInterval(() => {
-        const url = 'https://peerberry.com/'
+bot.command('start', (ctx) => {
+  bot.telegram.sendMessage(
+    ctx.chat.id,
+    'I began monitoring the for short-term loans.',
+    {}
+  );
 
-        https.get(url, res => {
-            let data = ''
-            res.setEncoding('utf8')
+  const checkInterval = setInterval(() => {
+    const url = 'https://peerberry.com/';
 
-            res.on('data', chunk => {
-                data += chunk
-            })
+    https
+      .get(url, (res) => {
+        let data = '';
+        res.setEncoding('utf8');
 
-            res.on('end', () => {
-                // fetch peerberry avaiable loans
-                const $ = cheerio.load(data)
-                let tableRows = $('.table__content').find('.table__row').toArray()
-                for (const row of tableRows) {
-                    const cell = $(row).find('.table__cell')
-                    const loanCountry = cell.eq(1).text().trim().toLowerCase()
-                    const loanType = cell.eq(3).text().trim().toLowerCase()
-
-                    // const str = `${loanCountry} / ${loanType}`
-                    // console.log(str)
-
-                    if (loanType === 'short' && ['philippines', 'kazakhstan', 'vietnam'].includes(loanCountry)) {
-                        return reply(ctx, `New short term loans founded, check it out [here](${url})`)
-                    }
-                }
-            });
-
-        }).on('error', err => {
-            console.log(err)
-            clearInterval(checkInterval)
+        res.on('data', (chunk) => {
+          data += chunk;
         });
-    }, 10*1000)
-})
 
-bot.launch()
+        res.on('end', () => {
+          // fetch peerberry avaiable loans
+          const $ = cheerio.load(data);
+          let tableRows = $('.table__content').find('.table__row').toArray();
+          for (const row of tableRows) {
+            const cell = $(row).find('.table__cell');
+            const loanCountry = cell.eq(1).text().trim().toLowerCase();
+            const loanType = cell.eq(3).text().trim().toLowerCase();
 
-process.once('SIGINT', () => bot.stop('SIGINT'))
-process.once('SIGTERM', () => bot.stop('SIGTERM'))
+            // const str = `${loanCountry} / ${loanType}`
+            // console.debug(str)
+
+            if (
+              loanType === process.env.LOAN_TYPE &&
+              process.env.LOAN_COUNTRIES.split(',').includes(loanCountry)
+            ) {
+              return reply(
+                ctx,
+                `New short term loans founded, check it out [here](${url})`
+              );
+            }
+          }
+        });
+      })
+      .on('error', (err) => {
+        console.log(err);
+        clearInterval(checkInterval);
+      });
+  }, 10 * 1000);
+});
+
+bot.launch();
+
+process.once('SIGINT', () => bot.stop('SIGINT'));
+process.once('SIGTERM', () => bot.stop('SIGTERM'));
