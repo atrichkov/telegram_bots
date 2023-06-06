@@ -88,9 +88,9 @@ bot.command('status', (ctx) => {
       if (err) throw err;
       
       const list = JSON.parse(data.toString());
-      list.forEach(url => {   
+      list.forEach(url => {
         (url.indexOf('https') === 0 ? https : http)
-          .get(process.env.HEALTHCHECK_URL, (res) => {
+          .get(url, (res) => {
             let healthcheckData = '';
             res.setEncoding('utf8');
 
