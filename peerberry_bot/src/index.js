@@ -20,8 +20,6 @@ function reply(ctx, message) {
   });
 }
 
-console.log();
-
 bot.command('start', (ctx) => {
   bot.telegram.sendMessage(
     ctx.chat.id,
