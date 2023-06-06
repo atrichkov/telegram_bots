@@ -11,6 +11,7 @@ if (token === undefined) {
   throw new Error('BOT_TOKEN must be provided!');
 }
 const bot = new Telegraf(token);
+const urlsFilePath = path.join(__dirname, 'data.json');
 
 bot.use(commandArgsMiddleware())
 
@@ -33,12 +34,20 @@ bot.command('add', (ctx) => {
       }
 
       let existingData = [];
-      try {
-        const fileData = fs.readFileSync(path.join(__dirname, 'data.json'));
+      if (fs.existsSync(urlsFilePath)) {
+        const fileData = fs.readFileSync(urlsFilePath);
         existingData = JSON.parse(fileData.toString());
-      } catch {}
+      }
 
-      fs.writeFile(path.join(__dirname, 'data.json'), JSON.stringify([...existingData, ...ctx.state.command.args]), err => {
+      for (const url of ctx.state.command.args) {
+        try {
+          new URL(url);
+        } catch (err) {
+          return reply(ctx, `*${url}* is invalid, please provide list of valid urls!`)
+        }
+      }
+
+      fs.writeFile(urlsFilePath, JSON.stringify([...existingData, ...ctx.state.command.args]), err => {
         if (err) {
             return console.error(err);
         }
@@ -75,23 +84,23 @@ bot.command('start', (ctx) => {
 let checkInterval;
 bot.command('status', (ctx) => {
   checkInterval = setInterval(() => {
-    fs.readFile(path.join(__dirname, 'data.json'), (err, data) => {
+    fs.readFile(urlsFilePath, (err, data) => {
       if (err) throw err;
       
       const list = JSON.parse(data.toString());
       list.forEach(url => {   
         (url.indexOf('https') === 0 ? https : http)
           .get(process.env.HEALTHCHECK_URL, (res) => {
-            let data = '';
+            let healthcheckData = '';
             res.setEncoding('utf8');
 
             res.on('data', (chunk) => {
-              data += chunk;
+              healthcheckData += chunk;
             });
 
             res.on('end', () => {
               let formattedJson = '';
-              const jsonData = {url, ...JSON.parse(data)};
+              const jsonData = {url, ...JSON.parse(healthcheckData)};
             
               Object.keys(jsonData).forEach((key) => {
                 formattedJson += `${key}: ${jsonData[key]}\n`;
