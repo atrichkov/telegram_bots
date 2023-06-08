@@ -4,7 +4,7 @@ const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const { Telegraf } = require('telegraf');
-const commandArgsMiddleware = require('./commandArgs')
+const commandArgsMiddleware = require('./commandArgs');
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
 if (token === undefined) {
@@ -13,7 +13,7 @@ if (token === undefined) {
 const bot = new Telegraf(token);
 const urlsFilePath = path.join(__dirname, 'data.json');
 
-bot.use(commandArgsMiddleware())
+bot.use(commandArgsMiddleware());
 
 /**
  * @param {Object} ctx
@@ -23,14 +23,17 @@ function reply(ctx, message) {
   ctx.reply(message, {
     parse_mode: 'Markdown',
     disable_web_page_preview: true,
-  })
+  });
 }
 
 bot.command('add', (ctx) => {
   try {
     if (ctx.state.command) {
       if (!ctx.state.command.args.length) {
-        return reply(ctx, 'You must provide at least one url to begin monitoring!')
+        return reply(
+          ctx,
+          'You must provide at least one url to begin monitoring!'
+        );
       }
 
       let existingData = [];
@@ -43,20 +46,27 @@ bot.command('add', (ctx) => {
         try {
           new URL(url);
         } catch (err) {
-          return reply(ctx, `*${url}* is invalid, please provide list of valid urls!`)
+          return reply(
+            ctx,
+            `*${url}* is invalid, please provide list of valid urls!`
+          );
         }
       }
 
-      fs.writeFile(urlsFilePath, JSON.stringify([...existingData, ...ctx.state.command.args]), err => {
-        if (err) {
+      fs.writeFile(
+        urlsFilePath,
+        JSON.stringify([...existingData, ...ctx.state.command.args]),
+        (err) => {
+          if (err) {
             return console.error(err);
+          }
         }
-      });
+      );
     }
   } catch (err) {
-    console.error('Error: ', err)
+    console.error('Error: ', err);
   }
-})
+});
 
 bot.command('start', (ctx) => {
   bot.telegram.sendMessage(
@@ -76,6 +86,9 @@ bot.command('start', (ctx) => {
         To view the status of monitored services, use the command:
         /status
 
+        To stop updates for monitored services, use the command:
+        /stop
+
         Happy monitoring!`,
     {}
   );
@@ -86,9 +99,9 @@ bot.command('status', (ctx) => {
   checkInterval = setInterval(() => {
     fs.readFile(urlsFilePath, (err, data) => {
       if (err) throw err;
-      
+
       const list = JSON.parse(data.toString());
-      list.forEach(url => {
+      list.forEach((url) => {
         (url.indexOf('https') === 0 ? https : http)
           .get(url, (res) => {
             let healthcheckData = '';
@@ -100,12 +113,12 @@ bot.command('status', (ctx) => {
 
             res.on('end', () => {
               let formattedJson = '';
-              const jsonData = {url, ...JSON.parse(healthcheckData)};
-            
+              const jsonData = { url, ...JSON.parse(healthcheckData) };
+
               Object.keys(jsonData).forEach((key) => {
                 formattedJson += `${key}: ${jsonData[key]}\n`;
               });
-            
+
               return ctx.replyWithHTML(`<pre>${formattedJson}</pre>`);
             });
           })
@@ -123,8 +136,8 @@ bot.command('stop', (ctx) => {
     clearInterval(checkInterval);
   }
 
-  return reply(ctx, 'Monitoring is stoped use /status to run it again!')  
-})
+  return reply(ctx, 'Monitoring is stoped use /status to run it again!');
+});
 
 bot.launch();
 
