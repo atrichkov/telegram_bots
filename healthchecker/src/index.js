@@ -1,3 +1,5 @@
+'use strict';
+
 require('dotenv').config();
 const http = require('http');
 const https = require('https');
@@ -25,6 +27,35 @@ function reply(ctx, message) {
     disable_web_page_preview: true,
   });
 }
+
+bot.command('start', (ctx) => {
+  bot.telegram.sendMessage(
+    ctx.chat.id,
+    `👋 Hello! I am your Health Check Monitor Bot.
+      
+        I will keep an eye on your services and notify you if any issues are detected.
+
+        To get started, please provide the URLs of the services you want me to monitor.
+
+        Use the command:
+        /add <URL>
+          
+        For example:
+        /add https://example.com
+
+        To view the list of urls for monitoring
+        /list
+
+        To view the status of monitored services, use the command:
+        /status
+
+        To stop updates for monitored services, use the command:
+        /stop
+
+        Happy monitoring!`,
+    {}
+  );
+});
 
 bot.command('add', (ctx) => {
   try {
@@ -68,30 +99,14 @@ bot.command('add', (ctx) => {
   }
 });
 
-bot.command('start', (ctx) => {
-  bot.telegram.sendMessage(
-    ctx.chat.id,
-    `👋 Hello! I am your Health Check Monitor Bot.
-      
-        I will keep an eye on your services and notify you if any issues are detected.
+bot.command('list', (ctx) => {
+  let existingData = [];
+  if (fs.existsSync(urlsFilePath)) {
+    const fileData = fs.readFileSync(urlsFilePath);
+    existingData = JSON.parse(fileData.toString());
+  }
 
-        To get started, please provide the URLs of the services you want me to monitor.
-
-        Use the command:
-        /add <URL>
-          
-        For example:
-        /add https://example.com
-
-        To view the status of monitored services, use the command:
-        /status
-
-        To stop updates for monitored services, use the command:
-        /stop
-
-        Happy monitoring!`,
-    {}
-  );
+  return reply(ctx, existingData.join(', '));
 });
 
 let checkInterval;
