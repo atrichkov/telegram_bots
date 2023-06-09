@@ -28,6 +28,16 @@ function reply(ctx, message) {
   });
 }
 
+function getUrlsList() {
+  let existingData = [];
+  if (fs.existsSync(urlsFilePath)) {
+    const fileData = fs.readFileSync(urlsFilePath);
+    existingData = JSON.parse(fileData.toString());
+  }
+
+  return existingData;
+}
+
 bot.command('start', (ctx) => {
   bot.telegram.sendMessage(
     ctx.chat.id,
@@ -67,11 +77,7 @@ bot.command('add', (ctx) => {
         );
       }
 
-      let existingData = [];
-      if (fs.existsSync(urlsFilePath)) {
-        const fileData = fs.readFileSync(urlsFilePath);
-        existingData = JSON.parse(fileData.toString());
-      }
+      const existingData = getUrlsList();
 
       for (const url of ctx.state.command.args) {
         try {
@@ -100,11 +106,7 @@ bot.command('add', (ctx) => {
 });
 
 bot.command('list', (ctx) => {
-  let existingData = [];
-  if (fs.existsSync(urlsFilePath)) {
-    const fileData = fs.readFileSync(urlsFilePath);
-    existingData = JSON.parse(fileData.toString());
-  }
+  const existingData = getUrlsList();
 
   return reply(ctx, existingData.join(', '));
 });
