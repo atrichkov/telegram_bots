@@ -108,7 +108,12 @@ bot.command('add', (ctx) => {
 bot.command('list', (ctx) => {
   const existingData = getUrlsList();
 
-  return reply(ctx, existingData.join(', '));
+  let msg = '';
+  for (let i in existingData) {
+    msg += `${i}. ${existingData[i]}\n`;
+  }
+
+  return reply(ctx, msg);
 });
 
 let checkInterval;
