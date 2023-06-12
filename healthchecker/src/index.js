@@ -1,11 +1,10 @@
 'use strict';
 
 require('dotenv').config();
-const http = require('http');
-const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const { Telegraf } = require('telegraf');
+const { add, status } = require('./commands');
 const commandArgsMiddleware = require('./commandArgs');
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
@@ -69,37 +68,7 @@ bot.command('start', (ctx) => {
 
 bot.command('add', (ctx) => {
   try {
-    if (ctx.state.command) {
-      if (!ctx.state.command.args.length) {
-        return reply(
-          ctx,
-          'You must provide at least one url to begin monitoring!'
-        );
-      }
-
-      const existingData = getUrlsList();
-
-      for (const url of ctx.state.command.args) {
-        try {
-          new URL(url);
-        } catch (err) {
-          return reply(
-            ctx,
-            `*${url}* is invalid, please provide list of valid urls!`
-          );
-        }
-      }
-
-      fs.writeFile(
-        urlsFilePath,
-        JSON.stringify([...existingData, ...ctx.state.command.args]),
-        (err) => {
-          if (err) {
-            return console.error(err);
-          }
-        }
-      );
-    }
+    add(ctx, getUrlsList(), urlsFilePath);
   } catch (err) {
     console.error('Error: ', err);
   }
@@ -118,39 +87,7 @@ bot.command('list', (ctx) => {
 
 let checkInterval;
 bot.command('status', (ctx) => {
-  checkInterval = setInterval(() => {
-    fs.readFile(urlsFilePath, (err, data) => {
-      if (err) throw err;
-
-      const list = JSON.parse(data.toString());
-      list.forEach((url) => {
-        (url.indexOf('https') === 0 ? https : http)
-          .get(url, (res) => {
-            let healthcheckData = '';
-            res.setEncoding('utf8');
-
-            res.on('data', (chunk) => {
-              healthcheckData += chunk;
-            });
-
-            res.on('end', () => {
-              let formattedJson = '';
-              const jsonData = { url, ...JSON.parse(healthcheckData) };
-
-              Object.keys(jsonData).forEach((key) => {
-                formattedJson += `${key}: ${jsonData[key]}\n`;
-              });
-
-              return ctx.replyWithHTML(`<pre>${formattedJson}</pre>`);
-            });
-          })
-          .on('error', (err) => {
-            console.log(err);
-            clearInterval(checkInterval);
-          });
-      });
-    });
-  }, (process.env.CHECK_INTERVAL || 120) * 1000);
+  checkInterval = status(ctx, checkInterval, urlsFilePath);
 });
 
 bot.command('stop', (ctx) => {
