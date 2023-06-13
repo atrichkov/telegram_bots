@@ -27,7 +27,7 @@ module.exports = function (ctx, existingData, urlsFilePath) {
     fs.writeFile(
       urlsFilePath,
       JSON.stringify([...existingData, ...args]),
-      (err) => {
+      err => {
         if (err) {
           return console.error(err);
         }

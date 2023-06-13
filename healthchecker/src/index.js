@@ -4,7 +4,7 @@ require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 const { Telegraf } = require('telegraf');
-const { add, status } = require('./commands');
+const { add, status, monitor } = require('./commands');
 const commandArgsMiddleware = require('./commandArgs');
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
@@ -37,7 +37,7 @@ function getUrlsList() {
   return existingData;
 }
 
-bot.command('start', (ctx) => {
+bot.command('start', ctx => {
   bot.telegram.sendMessage(
     ctx.chat.id,
     `👋 Hello! I am your Health Check Monitor Bot.
@@ -58,6 +58,9 @@ bot.command('start', (ctx) => {
         To view the status of monitored services, use the command:
         /status
 
+        To start monitoring of services, use the command:
+        /monitor
+
         To stop updates for monitored services, use the command:
         /stop
 
@@ -66,7 +69,7 @@ bot.command('start', (ctx) => {
   );
 });
 
-bot.command('add', (ctx) => {
+bot.command('add', ctx => {
   try {
     add(ctx, getUrlsList(), urlsFilePath);
   } catch (err) {
@@ -74,7 +77,7 @@ bot.command('add', (ctx) => {
   }
 });
 
-bot.command('list', (ctx) => {
+bot.command('list', ctx => {
   const existingData = getUrlsList();
 
   let msg = '';
@@ -85,17 +88,21 @@ bot.command('list', (ctx) => {
   return reply(ctx, msg);
 });
 
-let checkInterval;
-bot.command('status', (ctx) => {
-  checkInterval = status(ctx, checkInterval, urlsFilePath);
+bot.command('status', ctx => {
+  checkInterval = status(ctx, urlsFilePath);
 });
 
-bot.command('stop', (ctx) => {
+let checkInterval;
+bot.command('monitor', ctx => {
+  checkInterval = monitor(ctx, checkInterval, urlsFilePath);
+});
+
+bot.command('stop', ctx => {
   if (checkInterval) {
     clearInterval(checkInterval);
   }
 
-  return reply(ctx, 'Monitoring is stoped use /status to run it again!');
+  return reply(ctx, 'Monitoring is stoped use /monitor to run it again!');
 });
 
 bot.launch();

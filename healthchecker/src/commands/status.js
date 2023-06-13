@@ -4,40 +4,37 @@ const fs = require('fs');
 const http = require('http');
 const https = require('https');
 
-module.exports = function (ctx, checkInterval, urlsFilePath) {
-  checkInterval = setInterval(() => {
-    fs.readFile(urlsFilePath, (err, data) => {
-      if (err) throw err;
+module.exports = function (ctx, urlsFilePath) {
+  fs.readFile(urlsFilePath, (err, data) => {
+    if (err) throw err;
 
-      const list = JSON.parse(data.toString());
-      list.forEach((url) => {
-        (url.indexOf('https') === 0 ? https : http)
-          .get(url, (res) => {
-            let healthcheckData = '';
-            res.setEncoding('utf8');
+    const list = JSON.parse(data.toString());
+    list.forEach(url => {
+      (url.indexOf('https') === 0 ? https : http)
+        .get(url, res => {
+          let healthcheckData = '';
+          res.setEncoding('utf8');
 
-            res.on('data', (chunk) => {
-              healthcheckData += chunk;
-            });
-
-            res.on('end', () => {
-              let formattedJson = '';
-              const jsonData = { url, ...JSON.parse(healthcheckData) };
-
-              Object.keys(jsonData).forEach((key) => {
-                formattedJson += `${key}: ${jsonData[key]}\n`;
-              });
-
-              return ctx.replyWithHTML(`<pre>${formattedJson}</pre>`);
-            });
-          })
-          .on('error', (err) => {
-            console.log(err);
-            clearInterval(checkInterval);
+          res.on('data', chunk => {
+            healthcheckData += chunk;
           });
-      });
-    });
-  }, (process.env.CHECK_INTERVAL || 120) * 1000);
 
-  return checkInterval;
+          res.on('end', () => {
+            console.log('aaaaa');
+
+            let formattedJson = '';
+            const jsonData = { url, ...JSON.parse(healthcheckData) };
+
+            Object.keys(jsonData).forEach(key => {
+              formattedJson += `${key}: ${jsonData[key]}\n`;
+            });
+
+            return ctx.replyWithHTML(`<pre>${formattedJson}</pre>`);
+          });
+        })
+        .on('error', err => {
+          console.error(err);
+        });
+    });
+  });
 };
