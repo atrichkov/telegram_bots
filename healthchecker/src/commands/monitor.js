@@ -14,11 +14,13 @@ module.exports = function (ctx, checkInterval, urlsFilePath) {
         (url.indexOf('https') === 0 ? https : http)
           .get(url, res => {})
           .on('error', err => {
-            clearInterval(checkInterval);
-            ctx.reply(`🔥🔥🔥 ${url} is down 🔥🔥🔥`, {
-              parse_mode: 'Markdown',
-              disable_web_page_preview: true,
-            });
+            if (err.code === 'ECONNREFUSED') {
+              clearInterval(checkInterval);
+              ctx.reply(`🔥🔥🔥 *${url}* is down 🔥🔥🔥`, {
+                parse_mode: 'Markdown',
+                disable_web_page_preview: true,
+              });
+            }
           });
       });
     });
