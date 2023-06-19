@@ -9,7 +9,7 @@ const commandArgsMiddleware = require('./commandArgs');
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
 if (token === undefined) {
-  throw new Error('BOT_TOKEN must be provided!');
+  throw new Error('BOT_TOKEN parameter must be provided!');
 }
 const bot = new Telegraf(token);
 const urlsFilePath = path.join(__dirname, 'data.json');
@@ -52,6 +52,9 @@ bot.command('start', ctx => {
         For example:
         /add https://example.com
 
+        To remove url from list for monitoring use:
+        /remove index <from /list command>
+
         To view the list of urls for monitoring
         /list
 
@@ -72,6 +75,26 @@ bot.command('start', ctx => {
 bot.command('add', ctx => {
   try {
     add(ctx, getUrlsList(), urlsFilePath);
+  } catch (err) {
+    console.error('Error: ', err);
+  }
+});
+
+bot.command('remove', ctx => {
+  try {
+    const { args } = ctx.state.command;
+    const list = getUrlsList();
+
+    list.splice(args[0], 1);
+    fs.writeFile(
+      urlsFilePath,
+      JSON.stringify(list),
+      err => {
+        if (err) {
+          return console.error(err);
+        }
+      }
+    );
   } catch (err) {
     console.error('Error: ', err);
   }
