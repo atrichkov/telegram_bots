@@ -2,8 +2,8 @@
 
 ## Requirements
 
-- minimum requirement NodeJS >= 16.0
-- minimum requirement NPM >= 8.0
+-   minimum requirement NodeJS >= 18.0
+-   minimum requirement NPM >= 8.0
 
 ## Getting Started
 
@@ -13,7 +13,7 @@ npm install
 
 ## Usage
 
-- Requires an [Node.js](https://nodejs.org/)
+-   Requires an [Node.js](https://nodejs.org/)
 
 ```shell
 npm run dev
