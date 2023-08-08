@@ -11,10 +11,8 @@
 npm install
 ```
 
-## Usage
-
--   Requires an [Node.js](https://nodejs.org/)
+## Usage/Examples
 
 ```shell
-npm run dev
+docker compose up
 ```
